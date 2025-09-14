@@ -83,7 +83,7 @@ def parse_products_from_page(driver) -> List[Product]:
         )
         price = float(price_text)
 
-        rating = len(item.find_elements(By.CLASS_NAME, "glyphicon-star"))
+        rating = len(item.find_elements(By.CLASS_NAME, "ws-icon-star"))
 
         reviews_text = item.find_element(By.CLASS_NAME, "review-count").text.strip()
         num_of_reviews = int(reviews_text.split(" ")[0])
