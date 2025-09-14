@@ -45,14 +45,25 @@ def accept_cookies(driver):
         pass
 
 
+def wait_for_thumbnails(driver, timeout: int = 8, min_count: int = 1) -> None:
+    WebDriverWait(driver, timeout).until(
+        lambda d: len(d.find_elements(By.CLASS_NAME, "thumbnail")) >= min_count
+    )
+
+
 def scroll_and_load(driver):
     while True:
         try:
             more_button = WebDriverWait(driver, 3).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "btn-primary"))
             )
+            before = len(driver.find_elements(By.CLASS_NAME, "thumbnail"))
+
             driver.execute_script("arguments[0].click();", more_button)
-            time.sleep(1)
+            WebDriverWait(driver, 5).until(
+                lambda d: len(d.find_elements(By.CLASS_NAME, "thumbnail")) > before
+            )
+
         except TimeoutException:
             break
 
@@ -105,8 +116,11 @@ def process_page(url: str, output_csv: str, use_scroll: bool = False):
     driver.get(url)
     accept_cookies(driver)
 
+    wait_for_thumbnails(driver, timeout=8, min_count=1)
+
     if use_scroll:
         scroll_and_load(driver)
+        wait_for_thumbnails(driver, timeout=5, min_count=1)
 
     products = parse_products_from_page(driver)
     save_to_csv(products, output_csv)
